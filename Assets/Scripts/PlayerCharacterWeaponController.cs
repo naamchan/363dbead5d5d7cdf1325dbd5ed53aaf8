@@ -1,6 +1,5 @@
 ﻿#nullable enable
 
-
 using System;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -11,13 +10,16 @@ namespace Gameplay
     {
         private readonly PlayerCharacterControllerConfig config;
         private readonly Transform characterCameraPivotTransform;
+        private readonly PlayerCharacterAnimationController animationController;
         private float nextFireTime = 0f;
         RaycastHit[] hits = new RaycastHit[16];
 
-        public PlayerCharacterWeaponController(PlayerCharacterControllerConfig config, Transform characterCameraPivotTransform)
+        public PlayerCharacterWeaponController(PlayerCharacterControllerConfig config,
+            Transform characterCameraPivotTransform, PlayerCharacterAnimationController animationController)
         {
             this.config = config ?? throw new ArgumentNullException(nameof(config));
             this.characterCameraPivotTransform = characterCameraPivotTransform ?? throw new ArgumentNullException(nameof(characterCameraPivotTransform));
+            this.animationController = animationController ?? throw new ArgumentNullException(nameof(animationController));
         }
 
         public void OnInput(PlayerInputData inputData, float currentTime)
@@ -30,13 +32,14 @@ namespace Gameplay
             {
                 var hit = hits[i];
 
-                if(hit.collider.TryGetComponent<Renderer>(out var renderer))
+                if(hit.collider.TryGetComponent<IShootTarget>(out var shootTarget))
                 {
-                    renderer.material.color = new Color(Random.value, Random.value, Random.value);
+                    shootTarget.OnShot();
                 }
             }
 
             nextFireTime = currentTime + config.FireDelay;
+            animationController.PlayFireAnimation();
         }
     }
 }

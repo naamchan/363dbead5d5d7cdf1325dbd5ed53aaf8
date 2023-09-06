@@ -6,10 +6,10 @@ namespace Gameplay
 {
     public struct PlayerInputData
     {
-        public float HorizontalMovement;
-        public float VerticalMovement;
-        public bool IsFire;
-        public Vector2 MousePositionDelta;
+        public readonly float HorizontalMovement;
+        public readonly float VerticalMovement;
+        public readonly bool IsFire;
+        public readonly Vector2 MousePositionDelta;
 
         public PlayerInputData(float horizontalMovement, float verticalMovement, bool isFire, Vector2 mouseDelta)
         {
