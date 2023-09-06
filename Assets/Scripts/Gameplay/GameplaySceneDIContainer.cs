@@ -1,5 +1,6 @@
 #nullable enable
 
+using Shared;
 using System.Linq;
 using UnityEngine;
 
@@ -26,7 +27,7 @@ namespace Gameplay
             var playerCharacterAnimationController = new PlayerCharacterAnimationController(leftWeaponAnimator, rightWeaponAnimator);
             var playerCharacterWeaponController = new PlayerCharacterWeaponController(characterControllerConfigScriptable.Config,
                 cameraArmTransform, playerCharacterAnimationController);
-            var playerScoreController = new PlayerScoreController();
+            var playerScoreController = new PlayerScoreController(FirebaseManager.CachedHighscore);
 
             playerInput.Inject(playerCharacterController, playerCharacterCameraController, playerCharacterWeaponController);
             gameplayUI.Inject(playerScoreController);
