@@ -1,7 +1,6 @@
 #nullable enable
 
 using Shared;
-using System.Linq;
 using UnityEngine;
 
 namespace Gameplay
@@ -10,7 +9,7 @@ namespace Gameplay
     public class GameplaySceneDIContainer : MonoBehaviour
     {
         [SerializeField] private CharacterController characterController = default!;
-        [SerializeField] private PlayerInput playerInput = default!;
+        [SerializeField] private GameplayConfigScriptable gameplayConfigScriptable = default!;
         [SerializeField] private PlayerCharacterControllerConfigScriptable characterControllerConfigScriptable = default!;
         [SerializeField] private Transform cameraArmTransform = default!;
         [SerializeField] private Animator leftWeaponAnimator = default!;
@@ -20,6 +19,9 @@ namespace Gameplay
 
         private void Awake()
         {
+            var unityLifeCycle = gameObject.AddComponent<UnityLifeCycle>();
+
+            var gameplayManager = new GameplayManager(unityLifeCycle, gameplayConfigScriptable.Config);
             var playerCharacterController = new PlayerCharacterMovementController(characterControllerConfigScriptable.Config,
                 characterController, cameraArmTransform);
             var playerCharacterCameraController = new PlayerCharacterCameraController(characterControllerConfigScriptable.Config,
@@ -27,17 +29,15 @@ namespace Gameplay
             var playerCharacterAnimationController = new PlayerCharacterAnimationController(leftWeaponAnimator, rightWeaponAnimator);
             var playerCharacterWeaponController = new PlayerCharacterWeaponController(characterControllerConfigScriptable.Config,
                 cameraArmTransform, playerCharacterAnimationController);
-            var playerScoreController = new PlayerScoreController(FirebaseManager.CachedHighscore);
+            var playerScoreController = new PlayerScoreController(gameplayManager, FirebaseManager.CachedHighscore);
+            var playerInput = new PlayerInputController(
+                unityLifeCycle, gameplayManager, playerCharacterController, playerCharacterCameraController, playerCharacterWeaponController);
 
-            playerInput.Inject(playerCharacterController, playerCharacterCameraController, playerCharacterWeaponController);
-            gameplayUI.Inject(playerScoreController);
-            foreach(var shootTarget in shootTargets)
+            gameplayUI.Inject(gameplayManager, playerScoreController);
+            foreach (var shootTarget in shootTargets)
             {
                 shootTarget.Inject(playerScoreController);
             }
-
-            // TODO: Find a place for this
-            Cursor.lockState = CursorLockMode.Locked;
         }
 
         private void OnValidate()
@@ -45,4 +45,6 @@ namespace Gameplay
             shootTargets = FindObjectsByType<ShootTarget>(FindObjectsSortMode.None);
         }
     }
+
+
 }

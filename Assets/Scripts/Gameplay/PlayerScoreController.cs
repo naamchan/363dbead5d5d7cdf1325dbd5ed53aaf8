@@ -14,21 +14,21 @@ namespace Gameplay
         public int Score => score;
 
         private int highscore;
-
-        public PlayerScoreController(int highscore)
-        {
-            this.highscore = highscore;
-        }
-
         public int Highscore => highscore;
+
+        private int gameStartHighscore;
+
+        public PlayerScoreController(GameplayManager gameplayManager, int highscore)
+        {
+            gameplayManager.WhenGameEnded += OnGameEnded;
+            this.highscore = highscore;
+            gameStartHighscore = highscore;
+        }
 
         public void SetHighscore(int highscore)
         {
             this.highscore = highscore;
             WhenHighscoreUpdated?.Invoke(highscore);
-
-            //
-            _ = FirebaseManager.UpdatePlayerHighscore(highscore);
         }
 
         public void AddScore(int scoreToAdd)
@@ -39,6 +39,14 @@ namespace Gameplay
             if (highscore < score)
             {
                 SetHighscore(score);
+            }
+        }
+
+        private void OnGameEnded()
+        {
+            if (highscore > gameStartHighscore)
+            {
+                _ = FirebaseManager.UpdatePlayerHighscore(highscore);
             }
         }
     }

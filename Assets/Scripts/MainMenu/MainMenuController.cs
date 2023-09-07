@@ -2,8 +2,6 @@
 
 using Shared;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -20,15 +18,15 @@ namespace MainMenu
 
             try
             {
-                Debug.Log("Logging in");
-                await FirebaseManager.AnonymousLogin();
-                Debug.Log("Fetching highscore");
-                await FirebaseManager.FetchPlayerHighscore();
+                if (!FirebaseManager.IsLoggedIn)
+                {
+                    await FirebaseManager.AnonymousLogin(destroyCancellationToken);
+                    await FirebaseManager.FetchPlayerHighscore(destroyCancellationToken);
+                }
                 playButton.interactable = true;
             }
             catch (OperationCanceledException)
             {
-
             }
         }
 

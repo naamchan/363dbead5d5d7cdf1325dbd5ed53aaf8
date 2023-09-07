@@ -4,12 +4,15 @@ using Firebase.Auth;
 using Firebase.Firestore;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Shared
 {
     public static class FirebaseManager
     {
+        public static bool IsLoggedIn => loggedInUser != null;
+
         private static FirebaseUser? loggedInUser = default;
 
         private static int cachedHighscore = 0;
@@ -17,11 +20,14 @@ namespace Shared
 
         private const string HIGHSCORE_KEY = "highscore";
 
-        public static async Task AnonymousLogin()
+        public static async Task AnonymousLogin(CancellationToken cancellationToken)
         {
             if (FirebaseAuth.DefaultInstance.CurrentUser == null)
             {
                 var loginResult = await FirebaseAuth.DefaultInstance.SignInAnonymouslyAsync();
+                if (cancellationToken.IsCancellationRequested)
+                    return;
+
                 loggedInUser = loginResult.User;
             }
             else
@@ -30,7 +36,7 @@ namespace Shared
             }
         }
 
-        public static async Task FetchPlayerHighscore()
+        public static async Task FetchPlayerHighscore(CancellationToken cancellationToken)
         {
             if(loggedInUser == null)
             {
@@ -39,6 +45,9 @@ namespace Shared
 
             var documentRef = GetDocumentRef();
             var snapshot = await documentRef.GetSnapshotAsync();
+            if (cancellationToken.IsCancellationRequested)
+                return;
+
             Dictionary<string, object> document = snapshot.ToDictionary();
 
             if (document != null && document.ContainsKey(HIGHSCORE_KEY))
